@@ -22,6 +22,16 @@ SET SSH_IDENTITY_FILE=%HOME_SSH_FOLDER%id_rsa
 SET SSH_PUBLIC_KEY=%HOME_SSH_FOLDER%id_rsa.pub
 SET REMOTE_USERNAME=%2
 
+IF [%REMOTE_DESTINATION%] EQU [] (
+  echo Remote destination not provided
+  goto usage
+) 
+
+IF [%REMOTE_USERNAME%] EQU [] (
+  echo Remote username not provided
+  goto usage
+) 
+
 IF NOT EXIST "%HOME_SSH_FOLDER%" MKDIR "%HOME_SSH_FOLDER%"
 
 IF NOT EXIST "%SSH_IDENTITY_FILE%" (
@@ -36,16 +46,6 @@ IF NOT EXIST "%SSH_PUBLIC_KEY%" (
   ssh-keygen -f "%SSH_IDENTITY_FILE%" -y -C %LOCAL_IDENTITY% > "%SSH_PUBLIC_KEY%"
 )
 
-IF [%REMOTE_DESTINATION%] EQU [] (
-  echo Remote destination not provided
-  goto end
-) 
-
-IF [%REMOTE_USERNAME%] EQU [] (
-  echo Remote username not provided
-  goto end
-) 
-
 ssh-keygen -R %REMOTE_DESTINATION%
 
   :: sed -i -e to add newlines at the end (it adds two newlines - don't know why)
@@ -59,6 +59,15 @@ ssh %REMOTE_USERNAME%@%REMOTE_DESTINATION% "echo Hellow from SSH without passwor
 echo "Now use 'ssh %REMOTE_USERNAME%@%REMOTE_DESTINATION%' to start SSH session"
 
   :: ssh %REMOTE_USERNAME%@%REMOTE_DESTINATION%
+
+goto end
+
+:usage
+echo %~0 ^<remote address^> ^<remote user name^>
+echo Example 
+echo %~0 rpi-homeserver pi
+echo %~0 192.168.7.7 admn
+echo %~0 homeserver.myhome.com admin
 
 :end
 exit /b
